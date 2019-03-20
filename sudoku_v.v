@@ -3,7 +3,7 @@ module sudoku_v(enter,out);
 	output [323:0] out;
 	
 	reg [8:0] maybes [0:8][0:8];
-    reg finals [0:8][0:8];
+	reg finals [0:8][0:8];
 	integer MC,x,y;
 	
 	initial begin
