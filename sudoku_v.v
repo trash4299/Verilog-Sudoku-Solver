@@ -3,17 +3,9 @@ module sudoku_v(enter,out);
 	output [323:0] out;
 	
 	reg [8:0] maybes [0:8][0:8];
-    reg finals [0:8][0:8];
 	integer MC,x,y;
 	
 	initial begin
-		integer i,k;
-		for(i = 0; i < 9; i = i + 1) begin : row
-			for(k = 0; k < 9; k = k + 1) begin : column
-				reg[8:0] temp;
-				//make a case statement setting up possibilities for enter[4*(i*9+k):4*(i*9+k)+3];
-			end
-		end
 		x <= 0;
 		y <= 0;
 		MC <= 0;
@@ -22,6 +14,29 @@ module sudoku_v(enter,out);
 	
 	always begin
 		if(MC == 0) begin
+			integer i,k;
+			for(i = 0; i < 9; i = i + 1) begin : row
+				for(k = 0; k < 9; k = k + 1) begin : column
+					integer ex, why;
+					ex = 4*(i*9+k);
+					why = 4*(i*9+k)+3;
+					case(enter[ex:why])
+					4'b0000 : maybes[i][k] <= "111111111";
+					4'b0001 : maybes[i][k] <= "000000001";
+					4'b0010 : maybes[i][k] <= "000000010";
+					4'b0011 : maybes[i][k] <= "000000100";
+					4'b0100 : maybes[i][k] <= "000001000";
+					4'b0101 : maybes[i][k] <= "000010000";
+					4'b0110 : maybes[i][k] <= "000100000";
+					4'b0111 : maybes[i][k] <= "001000000";
+					4'b1000 : maybes[i][k] <= "010000000";
+					4'b1001 : maybes[i][k] <= "100000000";
+					endcase
+			end
+		end
+		end
+		
+		else if(MC == 1) begin
 			
 			//for loop with all checking tasks
 			
@@ -31,43 +46,28 @@ module sudoku_v(enter,out);
 			n <= 0;
 			for(i = 0; i < 9; i = i + 1) begin
 				for(g = 0; g < 9; g = g + 1) begin
-					if(finals[i][g] == 0)
+					if(isFinal(i,g) == 0)
 						n <= n + 1;
 				end
 			end
 			if (n == 81)
-				MC <= 1; //this might not work
+				MC <= 2; //this might not work
 			else
-				MC <= 0;
+				MC <= 1;
 		end
 		
-		else if(MC == 1) begin
+		else if(MC == 2) begin
 			//assign out pins using finnum task
 		end
+		
 	end
-	
-	
-	//setfinal task
-	task setFinal; begin
-		if(finals[x][y] == 0) begin
-			integer jello, i;
-			jello <= 0;
-			for(i = 0; i < 9; i = i + 1) begin
-				if(maybes[x][y][i] == 1)
-					jello <= jello + 1;
-			end
-			if(jello == 1)
-				finals[x][y] <= 1;
-		end
-	end
-	endtask
 
 	//rowchecker task
 	task rowChecker; begin
 		integer f;
 		for(f = 0; f < 9; f = f + 1) begin
 			if(f != y) begin
-				if(finals[x][f] == 1) begin
+				if(isFinal(x,f) == 1) begin
 					case(f) //figure out how to find the finnum
 						4'b0000 : break;
 						4'b0001 : if(maybes[x][y][0] == 1) maybes[x][y][0] <= 0;
@@ -92,7 +92,7 @@ module sudoku_v(enter,out);
 		integer f;
 		for(f = 0; f < 9; f = f + 1) begin
 			if(f != x) begin
-				if(finals[f][y] == 1) begin
+				if(isFinal(f,y) == 1) begin
 					case(f) //figure out how to find the finnum
 						4'b0000 : break;
 						4'b0001 : if(maybes[x][y][0] == 1) maybes[x][y][0] <= 0;
@@ -111,9 +111,23 @@ module sudoku_v(enter,out);
 	end
 	endtask
 	
-	//final number finder task with x y inputs
-	//should extract it from possibilities
-	
+	//isFinal function
+	function isFinal;
+		input [3:0] x;
+		input [3:0] y;
+		integer count, f;
+		begin
+			count = 0;
+			for(f = 0; f < 9; f = f + 1) begin
+				if(maybes[x][y][f] == 1)
+					count = count + 1;
+			end
+			if (count == 1)
+				isFinal = 1;
+			else
+				isFinal = 0;
+		end
+	endfunction
 	
 	
 	
